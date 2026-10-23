@@ -4,7 +4,6 @@
     android:layout_height="match_parent"
     android:keepScreenOn="true">
 
-    <!-- Bilah Atas Gelap Pekat Elegan (#0f172a) -->
     <LinearLayout
         android:id="@+id/topExamBar"
         android:layout_width="match_parent"
@@ -16,7 +15,7 @@
         android:paddingEnd="16dp"
         android:visibility="gone">
 
-        <!-- Tombol Keluar Merah Jelas (Kiri) -->
+        <!-- Tombol Keluar (Kiri) -->
         <Button
             android:id="@+id/btnBackHome"
             android:layout_width="wrap_content"
@@ -30,29 +29,35 @@
             android:textSize="12sp"
             android:textStyle="bold" />
 
-        <!-- Tombol Refresh Gelap (Tengah) -->
-        <LinearLayout
+        <!-- Teks Motivasi Berganti Otomatis (Tengah) -->
+        <TextView
+            android:id="@+id/txtMotivationalQuote"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="center">
+            android:gravity="center"
+            android:text="🛡️ Mr. Syahill is watching you!!"
+            android:textColor="#38bdf8"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:singleLine="true" />
 
-            <Button
-                android:id="@+id/btnRefreshExam"
-                android:layout_width="40dp"
-                android:layout_height="32dp"
-                android:background="#1e293b"
-                android:text="🔄"
-                android:textColor="#ffffff"
-                android:textSize="14sp" />
-        </LinearLayout>
-
-        <!-- Status Baterai & Timer Terang (Kanan) -->
+        <!-- Area Kanan: Tombol Refresh + Baterai + Timer -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnRefreshExam"
+                android:layout_width="38dp"
+                android:layout_height="32dp"
+                android:layout_marginEnd="12dp"
+                android:background="#1e293b"
+                android:text="🔄"
+                android:textColor="#ffffff"
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/txtBatteryLevel"
