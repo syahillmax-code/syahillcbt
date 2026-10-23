@@ -2,12 +2,17 @@ package com.absm.examonlan
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.media.AudioManager
 import android.media.ToneGenerator
+import android.os.BatteryManager
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.text.InputType
 import android.view.KeyEvent
 import android.view.View
@@ -24,6 +29,7 @@ import android.webkit.WebViewClient
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -34,6 +40,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
     private lateinit var topExamBar: LinearLayout
+    private lateinit var txtBatteryLevel: TextView
+    private lateinit var txtExamTimer: TextView
+    private var examTimer: CountDownTimer? = null
+    private var batteryReceiver: BroadcastReceiver? = null
+
     private var currentExitPin = "12345"
     private var isInExamSession = false
     private val CAMERA_PERMISSION_CODE = 101
@@ -53,6 +64,8 @@ class MainActivity : AppCompatActivity() {
 
         topExamBar = findViewById(R.id.topExamBar)
         webView = findViewById(R.id.examWebView)
+        txtBatteryLevel = findViewById(R.id.txtBatteryLevel)
+        txtExamTimer = findViewById(R.id.txtExamTimer)
 
         val ws: WebSettings = webView.settings
         ws.javaScriptEnabled = true
@@ -76,9 +89,9 @@ class MainActivity : AppCompatActivity() {
 
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
-                // Bilah atas hanya disembunyikan jika halaman benar-benar sudah kembali ke beranda
                 if (url != null && url.contains("android_asset/index.html")) {
                     topExamBar.visibility = View.GONE
+                    stopExamFeatures()
                 }
             }
         }
@@ -88,7 +101,6 @@ class MainActivity : AppCompatActivity() {
                 request?.grant(request.resources)
             }
 
-            // Otomatis izinkan navigasi keluar (menghilangkan popup 'Confirm Navigation' Google Form)
             override fun onJsBeforeUnload(view: WebView?, url: String?, message: String?, result: JsResult?): Boolean {
                 if (!isInExamSession) {
                     result?.confirm()
@@ -101,6 +113,49 @@ class MainActivity : AppCompatActivity() {
         webView.loadUrl("file:///android_asset/index.html")
 
         findViewById<Button>(R.id.btnBackHome).setOnClickListener { showExitExamDialog() }
+        findViewById<Button>(R.id.btnRefreshExam).setOnClickListener { 
+            webView.reload()
+            Toast.makeText(this, "Memuat ulang halaman...", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun startExamFeatures() {
+        // Monitor Persentase Baterai
+        batteryReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+                val scale = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
+                if (level >= 0 && scale > 0) {
+                    val batteryPct = (level * 100) / scale
+                    txtBatteryLevel.text = "🔋 $batteryPct%"
+                }
+            }
+        }
+        registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+
+        // Timer Hitung Mundur Ujian (Default: 90 Menit)
+        examTimer?.cancel()
+        examTimer = object : CountDownTimer(90 * 60 * 1000L, 1000L) {
+            override fun onTick(millisUntilFinished: Long) {
+                val hours = (millisUntilFinished / 1000) / 3600
+                val minutes = ((millisUntilFinished / 1000) % 3600) / 60
+                val seconds = (millisUntilFinished / 1000) % 60
+                txtExamTimer.text = String.format("⏳ %02d:%02d:%02d", hours, minutes, seconds)
+            }
+
+            override fun onFinish() {
+                txtExamTimer.text = "⏳ WAKTU HABIS"
+                triggerViolationAlarm("Waktu ujian telah berakhir!")
+            }
+        }.start()
+    }
+
+    private fun stopExamFeatures() {
+        examTimer?.cancel()
+        batteryReceiver?.let {
+            try { unregisterReceiver(it) } catch (e: Exception) {}
+            batteryReceiver = null
+        }
     }
 
     private fun checkCameraPermission() {
@@ -130,10 +185,12 @@ class MainActivity : AppCompatActivity() {
                 isInExamSession = true
                 topExamBar.visibility = View.VISIBLE
                 enforceMinVolume()
+                startExamFeatures()
                 try { startLockTask() } catch (e: Exception) {}
                 webView.loadUrl(url)
             }
         }
+
         @JavascriptInterface
         fun openUrl(url: String) {
             runOnUiThread {
@@ -142,9 +199,11 @@ class MainActivity : AppCompatActivity() {
                 webView.loadUrl(url)
             }
         }
+
         @JavascriptInterface
         fun exitApp() {
             runOnUiThread {
+                stopExamFeatures()
                 try { stopLockTask() } catch (e: Exception) {}
                 finishAffinity()
             }
@@ -162,7 +221,7 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("Keluar") { _, _ ->
                 if (input.text.toString().trim() == currentExitPin || input.text.toString().trim() == "12345") {
                     isInExamSession = false
-                    // Bersihkan riwayat navigasi agar form tertutup bersih
+                    stopExamFeatures()
                     webView.clearHistory()
                     webView.loadUrl("file:///android_asset/index.html")
                 } else { 
@@ -209,5 +268,10 @@ class MainActivity : AppCompatActivity() {
             return true 
         }
         return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopExamFeatures()
     }
 }
