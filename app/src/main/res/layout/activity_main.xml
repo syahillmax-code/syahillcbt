@@ -4,32 +4,33 @@
     android:layout_height="match_parent"
     android:keepScreenOn="true">
 
+    <!-- Bilah Atas Gelap Pekat Elegan (#0f172a) -->
     <LinearLayout
         android:id="@+id/topExamBar"
         android:layout_width="match_parent"
         android:layout_height="44dp"
-        android:background="#f8fafc"
+        android:background="#0f172a"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:visibility="gone">
 
-        <!-- Tombol Keluar (Kiri) -->
+        <!-- Tombol Keluar Merah Jelas (Kiri) -->
         <Button
             android:id="@+id/btnBackHome"
             android:layout_width="wrap_content"
             android:layout_height="32dp"
-            android:background="#fee2e2"
+            android:background="#e11d48"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:text="🔒 KELUAR"
             android:textAllCaps="false"
-            android:textColor="#ef4444"
+            android:textColor="#ffffff"
             android:textSize="12sp"
             android:textStyle="bold" />
 
-        <!-- Tombol Refresh (Tengah) -->
+        <!-- Tombol Refresh Gelap (Tengah) -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -38,15 +39,15 @@
 
             <Button
                 android:id="@+id/btnRefreshExam"
-                android:layout_width="36dp"
+                android:layout_width="40dp"
                 android:layout_height="32dp"
-                android:background="#f1f5f9"
+                android:background="#1e293b"
                 android:text="🔄"
-                android:textColor="#475569"
+                android:textColor="#ffffff"
                 android:textSize="14sp" />
         </LinearLayout>
 
-        <!-- Status Baterai & Timer (Kanan) -->
+        <!-- Status Baterai & Timer Terang (Kanan) -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -59,8 +60,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="16dp"
                 android:text="🔋 100%"
-                android:textColor="#475569"
-                android:textSize="12sp"
+                android:textColor="#38bdf8"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -68,8 +69,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="⏳ 00:00:00"
-                android:textColor="#0284c7"
-                android:textSize="13sp"
+                android:textColor="#facc15"
+                android:textSize="14sp"
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
