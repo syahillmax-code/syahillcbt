@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Bundle
@@ -13,6 +14,7 @@ import android.view.View
 import android.view.WindowManager
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
+import android.webkit.JsResult
 import android.webkit.PermissionRequest
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -66,14 +68,36 @@ class MainActivity : AppCompatActivity() {
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
 
         webView.addJavascriptInterface(AndroidBridge(), "AndroidBridge")
+
         webView.webViewClient = object : WebViewClient() {
-            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean { return false }
+            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean { 
+                return false 
+            }
+
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+                // Bilah atas hanya disembunyikan jika halaman benar-benar sudah kembali ke beranda
+                if (url != null && url.contains("android_asset/index.html")) {
+                    topExamBar.visibility = View.GONE
+                }
+            }
         }
+        
         webView.webChromeClient = object : WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest?) {
                 request?.grant(request.resources)
             }
+
+            // Otomatis izinkan navigasi keluar (menghilangkan popup 'Confirm Navigation' Google Form)
+            override fun onJsBeforeUnload(view: WebView?, url: String?, message: String?, result: JsResult?): Boolean {
+                if (!isInExamSession) {
+                    result?.confirm()
+                    return true
+                }
+                return super.onJsBeforeUnload(view, url, message, result)
+            }
         }
+
         webView.loadUrl("file:///android_asset/index.html")
 
         findViewById<Button>(R.id.btnBackHome).setOnClickListener { showExitExamDialog() }
@@ -138,18 +162,26 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("Keluar") { _, _ ->
                 if (input.text.toString().trim() == currentExitPin || input.text.toString().trim() == "12345") {
                     isInExamSession = false
-                    topExamBar.visibility = View.GONE
+                    // Bersihkan riwayat navigasi agar form tertutup bersih
+                    webView.clearHistory()
                     webView.loadUrl("file:///android_asset/index.html")
-                } else { triggerViolationAlarm("PIN Salah!") }
+                } else { 
+                    triggerViolationAlarm("PIN Salah!") 
+                }
             }
-            .setNegativeButton("Batal") { d, _ -> d.dismiss(); enableImmersiveFullscreen() }
+            .setNegativeButton("Batal") { d, _ -> 
+                d.dismiss()
+                enableImmersiveFullscreen() 
+            }
             .show()
     }
 
     private fun triggerViolationAlarm(reason: String) {
         enforceMinVolume()
-        try { ToneGenerator(AudioManager.STREAM_ALARM, 100).startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 2000) } catch (e: Exception) {}
-        Toast.makeText(this, "⚠️ " + reason, Toast.LENGTH_LONG).show()
+        try { 
+            ToneGenerator(AudioManager.STREAM_ALARM, 100).startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 2000) 
+        } catch (e: Exception) {}
+        Toast.makeText(this, "⚠️ $reason", Toast.LENGTH_LONG).show()
     }
 
     override fun onUserLeaveHint() {
@@ -159,8 +191,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) { enableImmersiveFullscreen(); enforceMinVolume() }
-        else if (isInExamSession) { triggerViolationAlarm("Dilarang membuka notifikasi/aplikasi lain!") }
+        if (hasFocus) { 
+            enableImmersiveFullscreen()
+            enforceMinVolume() 
+        } else if (isInExamSession) { 
+            triggerViolationAlarm("Dilarang membuka notifikasi/aplikasi lain!") 
+        }
     }
 
     private fun enableImmersiveFullscreen() {
@@ -168,7 +204,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK) { Toast.makeText(this, "Tombol Kembali dikunci.", Toast.LENGTH_SHORT).show(); return true }
+        if (keyCode == KeyEvent.KEYCODE_BACK) { 
+            Toast.makeText(this, "Tombol Kembali dikunci.", Toast.LENGTH_SHORT).show()
+            return true 
+        }
         return super.onKeyDown(keyCode, event)
     }
 }
