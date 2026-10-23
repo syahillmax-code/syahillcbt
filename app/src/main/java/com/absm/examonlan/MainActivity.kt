@@ -8,11 +8,14 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.BatteryManager
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.Handler
+import android.os.Looper
 import android.text.InputType
 import android.view.KeyEvent
 import android.view.View
@@ -42,8 +45,56 @@ class MainActivity : AppCompatActivity() {
     private lateinit var topExamBar: LinearLayout
     private lateinit var txtBatteryLevel: TextView
     private lateinit var txtExamTimer: TextView
+    private lateinit var txtMotivationalQuote: TextView
+
     private var examTimer: CountDownTimer? = null
     private var batteryReceiver: BroadcastReceiver? = null
+    
+    private val quoteHandler = Handler(Looper.getMainLooper())
+    private var quoteIndex = 0
+
+    // 12 Variasi Kalimat Motivasi & Larangan Nyontek
+    private val motivationalQuotes = arrayOf(
+        "🛡️ Mr. Syahill is watching you!!",
+        "🚫 Jangan nyontek ya! Prestasi jujur itu berkah!",
+        "✨ Semangat ujiannya, kerjakan dengan teliti!",
+        "👀 Ingat, Allah Maha Melihat & Mr. Syahill mengawasi!",
+        "💡 Jujur itu juara, percaya pada kemampuan sendiri!",
+        "⚠️ Dilarang lirik kanan-kiri, tetap fokus ke layarmu!",
+        "🌸 Bismillah, tenang dan raih hasil terbaik!",
+        "🎯 Kejujuran mencerminkan karakter santri hebat!",
+        "📚 Teliti sebelum submit jawabanmu ya!",
+        "💪 Usaha sendiri rasanya jauh lebih membanggakan!",
+        "🧠 Baca soal perlahan, pasti bisa terjawab!",
+        "🌟 Santriwati ABSM: Unggul, Mandiri, dan Jujur!"
+    )
+
+    // Palet Warna-Warni Menarik yang Menyala di Latar Gelap
+    private val quoteColors = arrayOf(
+        Color.parseColor("#38bdf8"), // Sky Blue
+        Color.parseColor("#f87171"), // Coral Red
+        Color.parseColor("#4ade80"), // Mint Green
+        Color.parseColor("#facc15"), // Bright Yellow
+        Color.parseColor("#fb923c"), // Warm Orange
+        Color.parseColor("#f472b6"), // Soft Pink
+        Color.parseColor("#c084fc"), // Lavender Purple
+        Color.parseColor("#2dd4bf"), // Aqua Teal
+        Color.parseColor("#fbbf24"), // Amber Gold
+        Color.parseColor("#34d399"), // Emerald
+        Color.parseColor("#60a5fa"), // Neon Blue
+        Color.parseColor("#e879f9")  // Light Fuchsia
+    )
+
+    private val quoteRunnable = object : Runnable {
+        override fun run() {
+            if (isInExamSession) {
+                quoteIndex = (quoteIndex + 1) % motivationalQuotes.size
+                txtMotivationalQuote.text = motivationalQuotes[quoteIndex]
+                txtMotivationalQuote.setTextColor(quoteColors[quoteIndex % quoteColors.size])
+                quoteHandler.postDelayed(this, 3 * 60 * 1000L) // Berganti setiap 3 menit
+            }
+        }
+    }
 
     private var currentExitPin = "12345"
     private var isInExamSession = false
@@ -66,6 +117,7 @@ class MainActivity : AppCompatActivity() {
         webView = findViewById(R.id.examWebView)
         txtBatteryLevel = findViewById(R.id.txtBatteryLevel)
         txtExamTimer = findViewById(R.id.txtExamTimer)
+        txtMotivationalQuote = findViewById(R.id.txtMotivationalQuote)
 
         val ws: WebSettings = webView.settings
         ws.javaScriptEnabled = true
@@ -120,7 +172,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startExamFeatures(durationMinutes: Int) {
-        // Monitor Persentase Baterai Tablet
+        quoteIndex = 0
+        txtMotivationalQuote.text = motivationalQuotes[0]
+        txtMotivationalQuote.setTextColor(quoteColors[0])
+        quoteHandler.removeCallbacks(quoteRunnable)
+        quoteHandler.postDelayed(quoteRunnable, 3 * 60 * 1000L)
+
         batteryReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
@@ -133,7 +190,6 @@ class MainActivity : AppCompatActivity() {
         }
         registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
 
-        // Timer Hitung Mundur Otomatis Sesuai Pengaturan Web (Contoh: 70 Menit)
         examTimer?.cancel()
         val totalMillis = durationMinutes * 60 * 1000L
         examTimer = object : CountDownTimer(totalMillis, 1000L) {
@@ -152,6 +208,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopExamFeatures() {
+        quoteHandler.removeCallbacks(quoteRunnable)
         examTimer?.cancel()
         batteryReceiver?.let {
             try { unregisterReceiver(it) } catch (e: Exception) {}
@@ -192,7 +249,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Kompatibilitas jika dipanggil tanpa parameter durasi
         @JavascriptInterface
         fun startExamUrl(url: String, exitPin: String) {
             startExamUrl(url, exitPin, 70)
