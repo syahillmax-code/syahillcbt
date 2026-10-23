@@ -119,8 +119,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun startExamFeatures() {
-        // Monitor Persentase Baterai
+    private fun startExamFeatures(durationMinutes: Int) {
+        // Monitor Persentase Baterai Tablet
         batteryReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
@@ -133,9 +133,10 @@ class MainActivity : AppCompatActivity() {
         }
         registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
 
-        // Timer Hitung Mundur Ujian (Default: 90 Menit)
+        // Timer Hitung Mundur Otomatis Sesuai Pengaturan Web (Contoh: 70 Menit)
         examTimer?.cancel()
-        examTimer = object : CountDownTimer(90 * 60 * 1000L, 1000L) {
+        val totalMillis = durationMinutes * 60 * 1000L
+        examTimer = object : CountDownTimer(totalMillis, 1000L) {
             override fun onTick(millisUntilFinished: Long) {
                 val hours = (millisUntilFinished / 1000) / 3600
                 val minutes = ((millisUntilFinished / 1000) % 3600) / 60
@@ -179,16 +180,22 @@ class MainActivity : AppCompatActivity() {
 
     inner class AndroidBridge {
         @JavascriptInterface
-        fun startExamUrl(url: String, exitPin: String) {
+        fun startExamUrl(url: String, exitPin: String, durationMinutes: Int) {
             runOnUiThread {
                 currentExitPin = exitPin
                 isInExamSession = true
                 topExamBar.visibility = View.VISIBLE
                 enforceMinVolume()
-                startExamFeatures()
+                startExamFeatures(if (durationMinutes > 0) durationMinutes else 70)
                 try { startLockTask() } catch (e: Exception) {}
                 webView.loadUrl(url)
             }
+        }
+
+        // Kompatibilitas jika dipanggil tanpa parameter durasi
+        @JavascriptInterface
+        fun startExamUrl(url: String, exitPin: String) {
+            startExamUrl(url, exitPin, 70)
         }
 
         @JavascriptInterface
