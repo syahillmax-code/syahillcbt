@@ -10,10 +10,17 @@
   body { margin: 0; background: #f8fafc; color: #1e293b; overflow-x: hidden; }
   .screen { display: none; min-height: 100vh; flex-direction: column; align-items: center; justify-content: center; padding: 24px; position: relative; }
   .screen.active { display: flex; }
-  .power-btn { position: absolute; top: 20px; right: 28px; width: 48px; height: 48px; border-radius: 50%; background: #fee2e2; border: 2.5px solid #ef4444; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2); }
+  
+  .power-btn { 
+    position: absolute; top: 20px; right: 28px; width: 48px; height: 48px; 
+    border-radius: 50%; background: #fee2e2; border: 2.5px solid #ef4444; 
+    display: flex; align-items: center; justify-content: center; 
+    cursor: pointer; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2); 
+  }
   .power-btn svg { width: 24px; height: 24px; stroke: #ef4444; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
   .power-btn:active { background: #ef4444; }
   .power-btn:active svg { stroke: white; }
+
   .title { font-size: 38px; font-weight: 900; color: #0284c7; letter-spacing: 1px; margin: 0; }
   .subtitle { font-size: 14px; color: #64748b; margin-top: 4px; margin-bottom: 24px; font-weight: 500; }
   .clock-box { background: #dcfce7; border: 1px solid #bbf7d0; border-radius: 18px; padding: 20px 48px; text-align: center; min-width: 340px; margin-bottom: 24px; }
@@ -26,11 +33,13 @@
   .btn-orange { background: #ea580c; }
   .btn-purple { background: #6d28d9; }
   .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  
   .modal-bg { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.7); align-items: center; justify-content: center; z-index: 50; padding: 16px; }
   .modal-bg.active { display: flex; }
   .modal { background: white; width: 100%; max-width: 440px; border-radius: 18px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); text-align: left; }
   .input { width: 100%; padding: 12px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 16px; font-weight: bold; text-align: center; margin-top: 6px; margin-bottom: 14px; text-transform: uppercase; }
   .version-footer { position: fixed; bottom: 12px; font-size: 11px; font-weight: 600; color: #64748b; text-align: center; width: 100%; }
+  
   .token-box { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
   .scan-btn { background: #0284c7; color: white; border: none; border-radius: 10px; padding: 0 16px; height: 48px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
 </style>
@@ -42,10 +51,12 @@
     </div>
     <h1 class="title">Syahilll CBT</h1>
     <div class="subtitle">Ujian Google Form Anti Nyontek • SMP ABSM</div>
+    
     <div class="clock-box">
       <div id="dateStr" class="date-str">Memuat tanggal...</div>
       <div id="timeStr" class="time-str">00:00:00</div>
     </div>
+
     <div class="menu-wrap">
       <button class="btn btn-blue" onclick="openTokenModal()">🎓 Mulai Ujian</button>
       <button class="btn btn-red" onclick="showScreen('screenWelcome')">📋 Panel Guru</button>
@@ -77,7 +88,7 @@
         <p><b>Nama Panggilan:</b> Syahill</p>
         <p><b>Profesi:</b> Guru Bahasa Inggris</p>
         <p><b>Instansi:</b> SMP 'Aisyiyah Boarding School Malang (ABSM)</p>
-        <p><b>Deskripsi:</b> Exam Browser Kiosk aman berbasis Android terintegrasi Firebase Realtime Database. Dilengkapi Smart QR Scanner (Token & PIN otomatis), proteksi anti kecurangan, dan volume minimum 50%.</p>
+        <p><b>Deskripsi:</b> Exam Browser Kiosk aman berbasis Android terintegrasi Firebase Realtime Database. Dilengkapi Smart QR Scanner, proteksi anti kecurangan, sinkronisasi durasi ujian otomatis, dan volume minimum 50%.</p>
       </div>
       <button class="btn btn-blue" style="width:100%; margin-top:16px;" onclick="closeAboutModal()">Tutup</button>
     </div>
@@ -86,15 +97,19 @@
   <div id="modalToken" class="modal-bg">
     <div class="modal" style="text-align:center;">
       <h3 style="margin-top:0; color:#0284c7;">🎓 Masukkan Token Ujian</h3>
+      
       <label style="font-size:11px; font-weight:bold; color:#475569; display:block; text-align:left; margin-bottom:2px;">ID TOKEN UJIAN</label>
       <div class="token-box">
         <input id="inputToken" class="input" style="margin-bottom:0;" placeholder="KODE TOKEN" maxlength="15">
         <button class="scan-btn" onclick="startQrScanner()" title="Scan QR Code">📷</button>
       </div>
       <div style="font-size:11px; color:#64748b; text-align:left; margin-bottom:10px;">Scan QR Code untuk otomatis mengisi Token & PIN.</div>
+
       <div id="reader" style="width:100%; display:none; margin-bottom:10px; border-radius:10px; overflow:hidden;"></div>
+
       <label style="font-size:11px; font-weight:bold; color:#475569; display:block; text-align:left; margin-bottom:2px;">KODE PIN MASUK</label>
       <input id="inputPinMasuk" type="password" class="input" placeholder="PIN MASUK" maxlength="10">
+      
       <div id="tokenStatus" style="font-size:12px; color:#e11d48; margin-bottom:10px; text-align:center;"></div>
       <div class="row-2">
         <button class="btn" style="background:#94a3b8;" onclick="closeTokenModal()">Batal</button>
@@ -121,6 +136,7 @@
   let html5QrCode = null;
   let isScanningActive = false;
   let isProcessingToken = false;
+
   function updateClock() {
     const now = new Date();
     const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][now.getDay()];
@@ -128,69 +144,141 @@
     document.getElementById('dateStr').innerText = hari + ', ' + now.getDate() + ' ' + bulan + ' ' + now.getFullYear();
     document.getElementById('timeStr').innerText = now.toTimeString().split(' ')[0];
   }
-  setInterval(updateClock, 1000); updateClock();
-  function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-  function openTokenModal() { isProcessingToken = false; document.getElementById('tokenStatus').innerText = ''; document.getElementById('modalToken').classList.add('active'); }
-  function closeTokenModal() { stopQrScanner(); document.getElementById('modalToken').classList.remove('active'); }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function openTokenModal() { 
+    isProcessingToken = false;
+    document.getElementById('tokenStatus').innerText = ''; 
+    document.getElementById('modalToken').classList.add('active'); 
+  }
+  
+  function closeTokenModal() { 
+    stopQrScanner();
+    document.getElementById('modalToken').classList.remove('active'); 
+  }
+
   function openAboutModal() { document.getElementById('modalAbout').classList.add('active'); }
   function closeAboutModal() { document.getElementById('modalAbout').classList.remove('active'); }
   function openPinExitModal() { document.getElementById('inputPinExit').value = ''; document.getElementById('modalExit').classList.add('active'); }
+
   function startQrScanner() {
-    const readerDiv = document.getElementById('reader'); readerDiv.style.display = 'block';
+    const readerDiv = document.getElementById('reader');
+    readerDiv.style.display = 'block';
     isProcessingToken = false;
-    if (!html5QrCode) { html5QrCode = new Html5Qrcode("reader"); }
-    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 200, height: 200 } }, async (text) => {
-      if (isProcessingToken) return;
-      isProcessingToken = true;
-      const clean = text.trim();
-      if (clean.includes('#')) {
-        const parts = clean.split('#');
-        document.getElementById('inputToken').value = parts[0].trim().toUpperCase();
-        document.getElementById('inputPinMasuk').value = parts[1].trim();
-      } else {
-        document.getElementById('inputToken').value = clean.toUpperCase();
-      }
-      await stopQrScanner();
-      document.getElementById('tokenStatus').style.color = '#166534';
-      document.getElementById('tokenStatus').innerText = 'Memverifikasi ujian...';
-      verifyAndStartExam();
-    }, () => {}).then(() => { isScanningActive = true; }).catch(() => { document.getElementById('tokenStatus').innerText = 'Gagal mengakses kamera tablet.'; });
+    
+    if (!html5QrCode) {
+      html5QrCode = new Html5Qrcode("reader");
+    }
+    
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 200, height: 200 } },
+      async (decodedText) => {
+        if (isProcessingToken) return;
+        isProcessingToken = true;
+
+        const text = decodedText.trim();
+        if (text.includes('#')) {
+          const parts = text.split('#');
+          document.getElementById('inputToken').value = parts[0].trim().toUpperCase();
+          document.getElementById('inputPinMasuk').value = parts[1].trim();
+        } else {
+          document.getElementById('inputToken').value = text.toUpperCase();
+        }
+
+        await stopQrScanner();
+        
+        document.getElementById('tokenStatus').style.color = '#166534';
+        document.getElementById('tokenStatus').innerText = 'Memverifikasi ujian...';
+        
+        verifyAndStartExam();
+      },
+      (err) => {}
+    ).then(() => {
+      isScanningActive = true;
+    }).catch(err => {
+      document.getElementById('tokenStatus').innerText = 'Gagal mengakses kamera tablet.';
+    });
   }
+
   async function stopQrScanner() {
     if (html5QrCode && isScanningActive) {
-      try { await html5QrCode.stop(); } catch (e) {}
+      try {
+        await html5QrCode.stop();
+      } catch (e) {}
       isScanningActive = false;
     }
     document.getElementById('reader').style.display = 'none';
   }
+
   async function verifyAndStartExam() {
     const token = document.getElementById('inputToken').value.trim().toUpperCase();
     const pin = document.getElementById('inputPinMasuk').value.trim();
     const statusEl = document.getElementById('tokenStatus');
-    if (!token || !pin) { statusEl.style.color = '#e11d48'; statusEl.innerText = 'Token dan PIN wajib diisi!'; isProcessingToken = false; return; }
+    
+    if (!token || !pin) { 
+      statusEl.style.color = '#e11d48'; 
+      statusEl.innerText = 'Token dan PIN wajib diisi!'; 
+      isProcessingToken = false;
+      return; 
+    }
+
     statusEl.style.color = '#0284c7';
     statusEl.innerText = 'Menghubungkan ke server...';
+
     try {
       const res = await fetch(FIREBASE_DB + '/exam_protector/exams.json', { cache: 'no-store' });
       const data = await res.json();
       const found = Object.values(data || {}).find(e => String(e.token || '').toUpperCase() === token);
-      if (!found) { statusEl.style.color = '#e11d48'; statusEl.innerText = 'Token tidak ditemukan!'; isProcessingToken = false; return; }
-      if (String(found.pinMasuk || '1234') !== pin) { statusEl.style.color = '#e11d48'; statusEl.innerText = 'PIN Masuk salah!'; isProcessingToken = false; return; }
+      
+      if (!found) { 
+        statusEl.style.color = '#e11d48'; 
+        statusEl.innerText = 'Token tidak ditemukan!'; 
+        isProcessingToken = false;
+        return; 
+      }
+      if (String(found.pinMasuk || '1234') !== pin) { 
+        statusEl.style.color = '#e11d48'; 
+        statusEl.innerText = 'PIN Masuk salah!'; 
+        isProcessingToken = false;
+        return; 
+      }
+      
       const examLink = found.link || found.gformUrl || found.url || found.formUrl;
-      if (!examLink) { statusEl.style.color = '#e11d48'; statusEl.innerText = 'Link Google Form kosong!'; isProcessingToken = false; return; }
+      if (!examLink) { 
+        statusEl.style.color = '#e11d48'; 
+        statusEl.innerText = 'Link Google Form kosong!'; 
+        isProcessingToken = false;
+        return; 
+      }
+
       if (found.pinKeluar) activeExitPin = String(found.pinKeluar);
+      
+      // Ambil durasi menit dari konfigurasi Firebase (default 70 menit)
+      const durationVal = parseInt(found.durationMinutes || found.duration || found.durasi || 70, 10);
+      const finalDuration = isNaN(durationVal) || durationVal <= 0 ? 70 : durationVal;
+
       document.getElementById('modalToken').classList.remove('active');
-      AndroidBridge.startExamUrl(examLink, activeExitPin);
-    } catch (e) {
-      statusEl.style.color = '#e11d48';
-      statusEl.innerText = 'Gagal terhubung ke server.';
+      AndroidBridge.startExamUrl(examLink, activeExitPin, finalDuration);
+    } catch (e) { 
+      statusEl.style.color = '#e11d48'; 
+      statusEl.innerText = 'Gagal terhubung ke server.'; 
       isProcessingToken = false;
     }
   }
+
   function verifyExitPin() {
     if (document.getElementById('inputPinExit').value.trim() === activeExitPin || document.getElementById('inputPinExit').value.trim() === "12345") {
       AndroidBridge.exitApp();
-    } else { alert('PIN Keluar Salah!'); }
+    } else { 
+      alert('PIN Keluar Salah!'); 
+    }
   }
 </script>
 </body>
