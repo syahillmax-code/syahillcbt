@@ -53,7 +53,6 @@ class MainActivity : AppCompatActivity() {
     private val quoteHandler = Handler(Looper.getMainLooper())
     private var quoteIndex = 0
 
-    // 12 Variasi Kalimat Motivasi & Larangan Nyontek
     private val motivationalQuotes = arrayOf(
         "🛡️ Mr. Syahill is watching you!!",
         "🚫 Jangan nyontek ya! Prestasi jujur itu berkah!",
@@ -69,20 +68,19 @@ class MainActivity : AppCompatActivity() {
         "🌟 Santriwati ABSM: Unggul, Mandiri, dan Jujur!"
     )
 
-    // Palet Warna-Warni Menarik
     private val quoteColors = arrayOf(
-        Color.parseColor("#38bdf8"), // Sky Blue
-        Color.parseColor("#f87171"), // Coral Red
-        Color.parseColor("#4ade80"), // Mint Green
-        Color.parseColor("#facc15"), // Bright Yellow
-        Color.parseColor("#fb923c"), // Warm Orange
-        Color.parseColor("#f472b6"), // Soft Pink
-        Color.parseColor("#c084fc"), // Lavender Purple
-        Color.parseColor("#2dd4bf"), // Aqua Teal
-        Color.parseColor("#fbbf24"), // Amber Gold
-        Color.parseColor("#34d399"), // Emerald
-        Color.parseColor("#60a5fa"), // Neon Blue
-        Color.parseColor("#e879f9")  // Light Fuchsia
+        Color.parseColor("#38bdf8"),
+        Color.parseColor("#f87171"),
+        Color.parseColor("#4ade80"),
+        Color.parseColor("#facc15"),
+        Color.parseColor("#fb923c"),
+        Color.parseColor("#f472b6"),
+        Color.parseColor("#c084fc"),
+        Color.parseColor("#2dd4bf"),
+        Color.parseColor("#fbbf24"),
+        Color.parseColor("#34d399"),
+        Color.parseColor("#60a5fa"),
+        Color.parseColor("#e879f9")
     )
 
     private val quoteRunnable = object : Runnable {
@@ -91,12 +89,13 @@ class MainActivity : AppCompatActivity() {
                 quoteIndex = (quoteIndex + 1) % motivationalQuotes.size
                 txtMotivationalQuote.text = motivationalQuotes[quoteIndex]
                 txtMotivationalQuote.setTextColor(quoteColors[quoteIndex % quoteColors.size])
-                quoteHandler.postDelayed(this, 3 * 60 * 1000L) // Berganti setiap 3 menit
+                quoteHandler.postDelayed(this, 3 * 60 * 1000L)
             }
         }
     }
 
-    private var currentExitPin = ""
+    private var currentExitPin = "1234567"
+    private var currentPengawasPin = "1234"
     private var isInExamSession = false
     private val CAMERA_PERMISSION_CODE = 101
 
@@ -237,9 +236,16 @@ class MainActivity : AppCompatActivity() {
 
     inner class AndroidBridge {
         @JavascriptInterface
-        fun startExamUrl(url: String, exitPin: String, durationMinutes: Int) {
+        fun startExamUrl(url: String, exitPinData: String, durationMinutes: Int) {
             runOnUiThread {
-                currentExitPin = exitPin.trim()
+                if (exitPinData.contains("#")) {
+                    val parts = exitPinData.split("#")
+                    currentExitPin = parts[0].trim()
+                    currentPengawasPin = parts[1].trim()
+                } else {
+                    currentExitPin = exitPinData.trim()
+                }
+
                 isInExamSession = true
                 topExamBar.visibility = View.VISIBLE
                 enforceMinVolume()
@@ -250,8 +256,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         @JavascriptInterface
-        fun startExamUrl(url: String, exitPin: String) {
-            startExamUrl(url, exitPin, 70)
+        fun startExamUrl(url: String, exitPinData: String) {
+            startExamUrl(url, exitPinData, 70)
         }
 
         @JavascriptInterface
@@ -276,15 +282,15 @@ class MainActivity : AppCompatActivity() {
     private fun showExitExamDialog() {
         val input = EditText(this)
         input.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_PASSWORD
-        input.hint = "PIN Keluar"
+        input.hint = "PIN Pengawas / Keluar"
         AlertDialog.Builder(this)
             .setTitle("🔒 Keluar Ujian")
-            .setMessage("Masukkan PIN Keluar:")
+            .setMessage("Masukkan PIN Pengawas atau PIN Keluar:")
             .setView(input)
             .setPositiveButton("Keluar") { _, _ ->
                 val enteredPin = input.text.toString().trim()
-                // HANYA terima PIN yang diatur di web Firebase
-                if (enteredPin == currentExitPin && currentExitPin.isNotEmpty()) {
+                // BISA MENGGUNAKAN PIN PENGAWAS (1234) ATAU PIN KELUAR (1234567) DARI WEB
+                if (enteredPin == currentExitPin || enteredPin == currentPengawasPin) {
                     isInExamSession = false
                     stopExamFeatures()
                     webView.clearHistory()
