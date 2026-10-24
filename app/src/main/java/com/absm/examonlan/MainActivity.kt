@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         "🌟 Santriwati ABSM: Unggul, Mandiri, dan Jujur!"
     )
 
-    // Palet Warna-Warni Menarik yang Menyala di Latar Gelap
+    // Palet Warna-Warni Menarik
     private val quoteColors = arrayOf(
         Color.parseColor("#38bdf8"), // Sky Blue
         Color.parseColor("#f87171"), // Coral Red
@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private var currentExitPin = "123456"
+    private var currentExitPin = ""
     private var isInExamSession = false
     private val CAMERA_PERMISSION_CODE = 101
 
@@ -283,7 +283,8 @@ class MainActivity : AppCompatActivity() {
             .setView(input)
             .setPositiveButton("Keluar") { _, _ ->
                 val enteredPin = input.text.toString().trim()
-                if (enteredPin == currentExitPin || enteredPin == "123456" || enteredPin == "12345") {
+                // HANYA terima PIN yang diatur di web Firebase
+                if (enteredPin == currentExitPin && currentExitPin.isNotEmpty()) {
                     isInExamSession = false
                     stopExamFeatures()
                     webView.clearHistory()
