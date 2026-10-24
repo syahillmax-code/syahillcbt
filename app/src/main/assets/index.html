@@ -132,7 +132,7 @@
 
 <script>
   const FIREBASE_DB = "https://smp-absm-db3-default-rtdb.asia-southeast1.firebasedatabase.app";
-  let activeExitPin = "12345";
+  let activeExitPin = "123456";
   let html5QrCode = null;
   let isScanningActive = false;
   let isProcessingToken = false;
@@ -258,7 +258,9 @@
         return; 
       }
 
-      if (found.pinKeluar) activeExitPin = String(found.pinKeluar);
+      // Membaca PIN Keluar dinamis dari konfigurasi web Firebase
+      const fetchedPin = found.pinKeluar || found.exitPin || found.pin_keluar || found.pinKeluarApk;
+      activeExitPin = String(fetchedPin ? fetchedPin : "123456").trim();
       
       // Ambil durasi menit dari konfigurasi Firebase (default 70 menit)
       const durationVal = parseInt(found.durationMinutes || found.duration || found.durasi || 70, 10);
@@ -274,7 +276,8 @@
   }
 
   function verifyExitPin() {
-    if (document.getElementById('inputPinExit').value.trim() === activeExitPin || document.getElementById('inputPinExit').value.trim() === "12345") {
+    const entered = document.getElementById('inputPinExit').value.trim();
+    if (entered === activeExitPin || entered === "123456" || entered === "12345") {
       AndroidBridge.exitApp();
     } else { 
       alert('PIN Keluar Salah!'); 
