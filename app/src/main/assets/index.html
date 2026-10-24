@@ -121,7 +121,7 @@
   <div id="modalExit" class="modal-bg">
     <div class="modal" style="text-align:center;">
       <h3 style="margin-top:0; color:#e11d48;">🔒 Keluar Aplikasi</h3>
-      <p style="font-size:12px; color:#64748b;">Masukkan PIN Pengawas / Master:</p>
+      <p style="font-size:12px; color:#64748b;">Masukkan PIN Pengawas:</p>
       <input id="inputPinExit" type="password" class="input" placeholder="PIN KELUAR">
       <div class="row-2">
         <button class="btn" style="background:#94a3b8;" onclick="document.getElementById('modalExit').classList.remove('active')">Batal</button>
@@ -132,7 +132,7 @@
 
 <script>
   const FIREBASE_DB = "https://smp-absm-db3-default-rtdb.asia-southeast1.firebasedatabase.app";
-  let activeExitPin = "123456";
+  let activeExitPin = "";
   let html5QrCode = null;
   let isScanningActive = false;
   let isProcessingToken = false;
@@ -258,11 +258,11 @@
         return; 
       }
 
-      // Membaca PIN Keluar dinamis dari konfigurasi web Firebase
+      // Ambil PIN Keluar resmi dari Firebase
       const fetchedPin = found.pinKeluar || found.exitPin || found.pin_keluar || found.pinKeluarApk;
-      activeExitPin = String(fetchedPin ? fetchedPin : "123456").trim();
+      activeExitPin = String(fetchedPin || '').trim();
       
-      // Ambil durasi menit dari konfigurasi Firebase (default 70 menit)
+      // Ambil durasi menit dari konfigurasi Firebase
       const durationVal = parseInt(found.durationMinutes || found.duration || found.durasi || 70, 10);
       const finalDuration = isNaN(durationVal) || durationVal <= 0 ? 70 : durationVal;
 
@@ -277,7 +277,7 @@
 
   function verifyExitPin() {
     const entered = document.getElementById('inputPinExit').value.trim();
-    if (entered === activeExitPin || entered === "123456" || entered === "12345") {
+    if (entered === activeExitPin && activeExitPin !== '') {
       AndroidBridge.exitApp();
     } else { 
       alert('PIN Keluar Salah!'); 
