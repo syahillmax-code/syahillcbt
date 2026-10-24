@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private var currentExitPin = "12345"
+    private var currentExitPin = "123456"
     private var isInExamSession = false
     private val CAMERA_PERMISSION_CODE = 101
 
@@ -239,7 +239,7 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface
         fun startExamUrl(url: String, exitPin: String, durationMinutes: Int) {
             runOnUiThread {
-                currentExitPin = exitPin
+                currentExitPin = exitPin.trim()
                 isInExamSession = true
                 topExamBar.visibility = View.VISIBLE
                 enforceMinVolume()
@@ -282,7 +282,8 @@ class MainActivity : AppCompatActivity() {
             .setMessage("Masukkan PIN Keluar:")
             .setView(input)
             .setPositiveButton("Keluar") { _, _ ->
-                if (input.text.toString().trim() == currentExitPin || input.text.toString().trim() == "12345") {
+                val enteredPin = input.text.toString().trim()
+                if (enteredPin == currentExitPin || enteredPin == "123456" || enteredPin == "12345") {
                     isInExamSession = false
                     stopExamFeatures()
                     webView.clearHistory()
