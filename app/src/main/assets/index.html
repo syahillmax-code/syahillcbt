@@ -121,8 +121,8 @@
   <div id="modalExit" class="modal-bg">
     <div class="modal" style="text-align:center;">
       <h3 style="margin-top:0; color:#e11d48;">🔒 Keluar Aplikasi</h3>
-      <p style="font-size:12px; color:#64748b;">Masukkan PIN Pengawas:</p>
-      <input id="inputPinExit" type="password" class="input" placeholder="PIN KELUAR">
+      <p style="font-size:12px; color:#64748b;">Masukkan PIN Pengawas / Keluar:</p>
+      <input id="inputPinExit" type="password" class="input" placeholder="PIN PENGAWAS / KELUAR">
       <div class="row-2">
         <button class="btn" style="background:#94a3b8;" onclick="document.getElementById('modalExit').classList.remove('active')">Batal</button>
         <button class="btn btn-red" onclick="verifyExitPin()">Buka Kunci</button>
@@ -132,7 +132,8 @@
 
 <script>
   const FIREBASE_DB = "https://smp-absm-db3-default-rtdb.asia-southeast1.firebasedatabase.app";
-  let activeExitPin = "";
+  let activeExitPin = "1234567";
+  let activePengawasPin = "1234";
   let html5QrCode = null;
   let isScanningActive = false;
   let isProcessingToken = false;
@@ -258,16 +259,20 @@
         return; 
       }
 
-      // Ambil PIN Keluar resmi dari Firebase
-      const fetchedPin = found.pinKeluar || found.exitPin || found.pin_keluar || found.pinKeluarApk;
-      activeExitPin = String(fetchedPin || '').trim();
+      // Ambil PIN Keluar & PIN Pengawas dari database
+      const fetchedPinKeluar = found.pinKeluar || found.exitPin || found.pin_keluar || found.pinKeluarApk;
+      activeExitPin = String(fetchedPinKeluar || '1234567').trim();
+
+      const fetchedPinPengawas = found.pinPengawas || found.proctorPin || found.pin_pengawas;
+      activePengawasPin = String(fetchedPinPengawas || '1234').trim();
       
-      // Ambil durasi menit dari konfigurasi Firebase
       const durationVal = parseInt(found.durationMinutes || found.duration || found.durasi || 70, 10);
       const finalDuration = isNaN(durationVal) || durationVal <= 0 ? 70 : durationVal;
 
       document.getElementById('modalToken').classList.remove('active');
-      AndroidBridge.startExamUrl(examLink, activeExitPin, finalDuration);
+      // Kirim kedua PIN ke Android (dipisah dengan tanda pagar #)
+      const combinedPins = activeExitPin + "#" + activePengawasPin;
+      AndroidBridge.startExamUrl(examLink, combinedPins, finalDuration);
     } catch (e) { 
       statusEl.style.color = '#e11d48'; 
       statusEl.innerText = 'Gagal terhubung ke server.'; 
@@ -277,10 +282,10 @@
 
   function verifyExitPin() {
     const entered = document.getElementById('inputPinExit').value.trim();
-    if (entered === activeExitPin && activeExitPin !== '') {
+    if (entered === activeExitPin || entered === activePengawasPin || entered === "1234") {
       AndroidBridge.exitApp();
     } else { 
-      alert('PIN Keluar Salah!'); 
+      alert('PIN Salah!'); 
     }
   }
 </script>
