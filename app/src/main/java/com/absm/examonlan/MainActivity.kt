@@ -12,16 +12,12 @@ import android.graphics.Color
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.BatteryManager
-import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.text.InputType
-import android.view.ActionMode
 import android.view.KeyEvent
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.webkit.CookieManager
@@ -122,21 +118,10 @@ class MainActivity : AppCompatActivity() {
         txtExamTimer = findViewById(R.id.txtExamTimer)
         txtMotivationalQuote = findViewById(R.id.txtMotivationalQuote)
 
-        // 1. Matikan Long Click agar tidak memunculkan menu seleksi
+        // Matikan tekan lama bawaan pada WebView
         webView.isLongClickable = false
+        webView.isHapticFeedbackEnabled = false
         webView.setOnLongClickListener { true }
-
-        // 2. Blokir Action Mode (Menu Copy, Select All, Share) di level sistem
-        val disableActionModeCallback = object : ActionMode.Callback {
-            override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean = false
-            override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean = false
-            override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean = false
-            override fun onDestroyActionMode(mode: ActionMode?) {}
-        }
-        webView.customSelectionActionModeCallback = disableActionModeCallback
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            webView.customInsertionActionModeCallback = disableActionModeCallback
-        }
 
         val ws: WebSettings = webView.settings
         ws.javaScriptEnabled = true
@@ -168,18 +153,18 @@ class MainActivity : AppCompatActivity() {
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                // 3. Suntikkan CSS anti-blok & anti-copy langsung ke halaman Google Form
-                val disableSelectionCss = """
-                    javascript:(function() {
+                // Kunci CSS seleksi teks langsung di dokumen Google Form
+                val disableSelectJs = """
+                    (function() {
                         var style = document.createElement('style');
                         style.type = 'text/css';
                         style.innerHTML = '* { -webkit-user-select: none !important; -webkit-touch-callout: none !important; user-select: none !important; } input, textarea { -webkit-user-select: text !important; user-select: text !important; }';
                         document.head.appendChild(style);
-                        document.addEventListener('contextmenu', function(e) { e.preventDefault(); }, false);
-                        document.addEventListener('copy', function(e) { e.preventDefault(); }, false);
-                    })()
+                        document.body.setAttribute('oncontextmenu', 'return false;');
+                        document.body.setAttribute('onselectstart', 'return false;');
+                    })();
                 """.trimIndent()
-                view?.loadUrl(disableSelectionCss)
+                view?.evaluateJavascript(disableSelectJs, null)
             }
         }
         
